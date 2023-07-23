@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // import "hardhat/console.sol";
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 contract DigitalAssetMarket {
     enum AssetState {
@@ -59,9 +59,9 @@ contract DigitalAssetMarket {
         require(theAsset.price == msg.value, "Value and price are different!");
 
         theAsset.state = AssetState.OutOfSale;
-        uint marketShare = (theAsset.price * shareOfSale) / 100;
-        payable(theAsset.owner).transfer(msg.value - marketShare);
-        balance += marketShare;
+        uint share = (theAsset.price * shareOfSale) / 100;
+        payable(theAsset.owner).transfer(msg.value - share);
+        balance += share;
         address oldOwner = theAsset.owner;
         theAsset.owner = msg.sender;
         assets[_assetIndex] = theAsset;
@@ -70,19 +70,16 @@ contract DigitalAssetMarket {
             msg.sender,
             _assetIndex,
             theAsset.price,
-            marketShare,
+            share,
             block.timestamp
         );
     }
 
     function withdraw(uint _amount) public {
         require(msg.sender == owner, "Only market owner can withdraw money!");
-        require(
-            _amount > 0 && _amount <= balance,
-            "Not acceptable money value!"
-        );
+        require(_amount <= balance, "Not enough money!");
         balance -= _amount;
-        payable(owner).transfer(_amount);
+        owner.transfer(_amount);
     }
 
     function assetData(
